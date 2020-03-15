@@ -21,7 +21,9 @@ public class File implements Serializable {
 
     private String name;
 
-    @Column(name = "perm_link")
-    private String permLink;
+    private Long size;
 
+    private String type;
+
+    private String uuid;
 }
