@@ -2,8 +2,12 @@ package filehandler.project.service;
 
 import filehandler.project.entity.File;
 import filehandler.project.repository.FileRepository;
+import filehandler.project.transformer.DownloadDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,7 +38,7 @@ public class FileServiceImp implements FileService {
         String fileName = fullName.substring(0, lastIndex);
         String fileExtension = fullName.substring(lastIndex + 1);
 
-        Path copyLocation = Paths.get(uploadDir + java.io.File.separator + uuid.toString() + "." +fileExtension);
+        Path copyLocation = Paths.get(uploadDir + java.io.File.separator + uuid.toString() + "." + fileExtension);
         Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
 
         return fileRepository.save(
@@ -46,5 +50,28 @@ public class FileServiceImp implements FileService {
                         .build()
         );
 
+    }
+
+    @Override
+    public DownloadDTO download(String uuid) throws IOException {
+
+        File file = fileRepository.findFileByUuid(uuid);
+        String fileBasename = file.getName() + "." + file.getType();
+        java.io.File javaFile = new java.io.File(uploadDir + java.io.File.separator + uuid + "." + file.getType());
+        Path path = Paths.get(javaFile.getAbsolutePath());
+        ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileBasename);
+        headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "0");
+
+        return DownloadDTO.builder()
+                .headers(headers)
+                .contentLength(javaFile.length())
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .resource(resource)
+                .build();
     }
 }
