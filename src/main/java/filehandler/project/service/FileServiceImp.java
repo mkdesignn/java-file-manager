@@ -1,6 +1,7 @@
 package filehandler.project.service;
 
 import filehandler.project.entity.File;
+import filehandler.project.exceptions.UuidNotFoundException;
 import filehandler.project.repository.FileRepository;
 import filehandler.project.transformer.DownloadDTO;
 import lombok.RequiredArgsConstructor;
@@ -53,9 +54,12 @@ public class FileServiceImp implements FileService {
     }
 
     @Override
-    public DownloadDTO download(String uuid) throws IOException {
+    public DownloadDTO download(String uuid) throws Exception {
 
         File file = fileRepository.findFileByUuid(uuid);
+        if (file == null) {
+            throw new UuidNotFoundException(uuid);
+        }
         String fileBasename = file.getName() + "." + file.getType();
         java.io.File javaFile = new java.io.File(uploadDir + java.io.File.separator + uuid + "." + file.getType());
         Path path = Paths.get(javaFile.getAbsolutePath());

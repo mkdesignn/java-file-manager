@@ -30,7 +30,7 @@ public class FileController {
     }
 
     @GetMapping(path = "/download/{uuid}")
-    public ResponseEntity<Resource> download(@PathVariable(name = "uuid") String uuid) throws IOException {
+    public ResponseEntity<Resource> download(@PathVariable(name = "uuid") String uuid) throws Exception {
         DownloadDTO dto = fileService.download(uuid);
         return ResponseEntity.ok()
                 .headers(dto.getHeaders())

@@ -10,6 +10,6 @@ public interface FileService {
 
     File upload(MultipartFile file) throws IOException;
 
-    DownloadDTO download(String uuid) throws IOException;
+    DownloadDTO download(String uuid) throws Exception;
 
 }
