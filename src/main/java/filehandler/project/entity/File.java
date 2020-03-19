@@ -1,13 +1,12 @@
 package filehandler.project.entity;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
-
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Setter
 @Getter
