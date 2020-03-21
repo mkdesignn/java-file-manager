@@ -1,0 +1,12 @@
+#we use java
+language: java
+
+#We add the java development kit
+jdk: oraclejdk8
+
+#ubunto version  Ubuntu Precise |	Ubuntu Trusty |	Ubuntu Xenial	| Ubuntu Bionic
+dist: trusty
+
+script:
+  - ./mvnw clean install -B
+  - mvn test
