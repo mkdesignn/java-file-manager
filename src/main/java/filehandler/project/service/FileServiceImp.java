@@ -47,18 +47,6 @@ public class FileServiceImp implements FileService {
     private final FileRepository fileRepository;
     private final S3Service s3Service;
 
-//    @Bean
-//    private AmazonS3 amazonClient() {
-//        return AmazonS3ClientBuilder
-//                .standard()
-//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret)))
-////                .withRegion(Regions.fromName(awsProperties.getS3().getRegion()))
-//                .withPathStyleAccessEnabled(true)
-//                .build();
-//
-//    }
-
-
     private java.io.File convertMultiPartToFile(MultipartFile file) throws IOException {
         java.io.File convFile = new java.io.File(Objects.requireNonNull(file.getOriginalFilename()));
         FileOutputStream fos = new FileOutputStream(convFile);
@@ -81,12 +69,9 @@ public class FileServiceImp implements FileService {
         String fileName = fullName.substring(0, lastIndex);
         String fileExtension = fullName.substring(lastIndex + 1);
 
-//        Path copyLocation = Paths.get(uploadDir + java.io.File.separator + uuid.toString() + "." + fileExtension);
-//        Files.copy(file.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
         java.io.File convertMultiPartToFile = convertMultiPartToFile(file);
         s3Client.putObject(new PutObjectRequest(bucketName, uploadDir + fullName, convertMultiPartToFile));
 
-//        convertMultiPartToFile.delete();
         return fileRepository.save(
                 File.builder()
                         .name(fileName)
