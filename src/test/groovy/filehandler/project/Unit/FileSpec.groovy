@@ -1,5 +1,6 @@
 package filehandler.project.Unit
 
+import com.amazonaws.services.s3.AmazonS3ClientBuilder
 import filehandler.project.controller.FileController
 import net.minidev.json.parser.JSONParser
 import org.json.JSONObject
@@ -29,6 +30,9 @@ class FileSpec extends Specification {
     }
 
     def "upload should throw an error if file field was empty"() {
+
+        given:
+            Mock(AmazonS3ClientBuilder)
 
         when:
         def response = mockMvc.perform(MockMvcRequestBuilders.multipart("/upload"))
