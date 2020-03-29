@@ -41,27 +41,22 @@ public class FileServiceImp implements FileService {
     @Value("${file.dir}")
     public String uploadDir;
 
-    @Value("${aws.key}")
-    private String key;
-
-    @Value("${aws.secret}")
-    private String secret;
-
     @Value("${aws.bucket-name}")
     private String bucketName;
 
     private final FileRepository fileRepository;
+    private final S3Service s3Service;
 
-    @Bean
-    private AmazonS3 amazonClient() {
-        return AmazonS3ClientBuilder
-                .standard()
-                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret)))
-//                .withRegion(Regions.fromName(awsProperties.getS3().getRegion()))
-                .withPathStyleAccessEnabled(true)
-                .build();
-
-    }
+//    @Bean
+//    private AmazonS3 amazonClient() {
+//        return AmazonS3ClientBuilder
+//                .standard()
+//                .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret)))
+////                .withRegion(Regions.fromName(awsProperties.getS3().getRegion()))
+//                .withPathStyleAccessEnabled(true)
+//                .build();
+//
+//    }
 
 
     private java.io.File convertMultiPartToFile(MultipartFile file) throws IOException {
@@ -77,7 +72,7 @@ public class FileServiceImp implements FileService {
     @Override
     public File upload(MultipartFile file) throws IOException {
 
-        AmazonS3 s3Client = amazonClient();
+        AmazonS3 s3Client = s3Service.amazonClient();
 
         UUID uuid = UUID.randomUUID();
         String fullName = StringUtils.cleanPath(file.getOriginalFilename());
@@ -91,7 +86,7 @@ public class FileServiceImp implements FileService {
         java.io.File convertMultiPartToFile = convertMultiPartToFile(file);
         s3Client.putObject(new PutObjectRequest(bucketName, uploadDir + fullName, convertMultiPartToFile));
 
-        convertMultiPartToFile.delete();
+//        convertMultiPartToFile.delete();
         return fileRepository.save(
                 File.builder()
                         .name(fileName)
