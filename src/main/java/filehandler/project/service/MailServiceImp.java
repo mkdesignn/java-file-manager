@@ -110,7 +110,7 @@ public class MailServiceImp implements MailService {
 
         attachmentFile = new File(filePath);
         attachmentFileName = fullName;
-        attachmentFilePath = filePath;
+        attachmentFilePath = uuid.toString() + "." + fileExtension;
 
     }
 }
