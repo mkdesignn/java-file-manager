@@ -2,6 +2,7 @@ package filehandler.project.service;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -37,11 +38,14 @@ public class S3Service {
     @Value("${aws.secret}")
     private String secret;
 
+    @Value("${aws.region}")
+    private String region;
+
     public AmazonS3 amazonClient() {
         return AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret)))
-//                .withRegion(Regions.fromName(awsProperties.getS3().getRegion()))
+                .withRegion(Regions.fromName(region))
                 .withPathStyleAccessEnabled(true)
                 .build();
 
