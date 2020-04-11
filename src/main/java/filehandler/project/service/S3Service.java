@@ -42,6 +42,7 @@ public class S3Service {
     private String region;
 
     public AmazonS3 amazonClient() {
+
         return AmazonS3ClientBuilder
                 .standard()
                 .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(key, secret)))
