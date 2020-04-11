@@ -21,13 +21,17 @@ public class ProjectApplication implements CommandLineRunner{
     private DataSource dataSource;
 
     public static void main(String[] args) {
-
+//        System.out.println("salam main");
+//        System.out.println(System.getenv("AWS_SECRET"));
+//        System.out.println(System.getenv("AWS_KEY"));
+//        System.out.println(System.getenv());
         SpringApplication.run(ProjectApplication.class, args);
     }
 
 
     @Override
     public void run(String... args) throws Exception {
-        System.out.println(System.getenv("AWS_KEY"));
+//        System.out.println("salam run");
+//        System.out.println(System.getenv());
     }
 }
