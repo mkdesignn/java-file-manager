@@ -2,10 +2,12 @@ package filehandler.project.service;
 
 import filehandler.project.entity.EmailMessage;
 import filehandler.project.entity.EmailReceiver;
+import filehandler.project.exceptions.EmailValidationException;
 import filehandler.project.repository.EmailMessageRepository;
 import filehandler.project.repository.EmailReceiverRepository;
 import filehandler.project.transformer.EmailDTO;
 import filehandler.project.transformer.MessageDTO;
+import filehandler.project.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -42,17 +44,25 @@ public class MailServiceImp implements MailService {
     private String attachmentFilePath;
 
     @Override
-    public MessageDTO send(EmailDTO email) throws Exception {
+    public MessageDTO send(EmailDTO emailDTO) throws Exception {
 
-        uploadAttachment(email.getAttachment());
+        String[] emailAddresses = emailDTO.getReceivers().split(",");
+        for (String email : emailAddresses) {
+            if (!Validation.isValidEmail(email)) {
+                throw new EmailValidationException(email);
+            }
+        }
+
+
+        uploadAttachment(emailDTO.getAttachment());
 
         MimeMessage msg = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, true);
 
-        String[] receiversEmails = email.getReceivers().split(",");
-        helper.setTo(receiversEmails);
-        helper.setSubject(email.getSubject());
-        helper.setText(email.getText(), true);
+
+        helper.setTo(emailAddresses);
+        helper.setSubject(emailDTO.getSubject());
+        helper.setText(emailDTO.getText(), true);
 
         if (attachmentFile != null) {
             helper.addAttachment(attachmentFileName, attachmentFile);
@@ -68,20 +78,20 @@ public class MailServiceImp implements MailService {
         }
 
         List<EmailReceiver> receivers = new ArrayList<>();
-        for (String receiverEmail : receiversEmails) {
-            Optional<EmailReceiver> optionalEmailReceiver = emailReceiverRepository.findByEmail(receiverEmail);
+        for (String email : emailAddresses) {
+            Optional<EmailReceiver> optionalEmailReceiver = emailReceiverRepository.findByEmail(email);
             if (optionalEmailReceiver.isPresent()) {
                 receivers.add(optionalEmailReceiver.get());
             } else {
-                EmailReceiver emailReceiver = emailReceiverRepository.save(EmailReceiver.builder().email(receiverEmail).build());
+                EmailReceiver emailReceiver = emailReceiverRepository.save(EmailReceiver.builder().email(email).build());
                 receivers.add(emailReceiver);
             }
         }
 
         emailMessageRepository.save(
                 EmailMessage.builder()
-                        .subject(email.getSubject())
-                        .text(email.getText())
+                        .subject(emailDTO.getSubject())
+                        .text(emailDTO.getText())
                         .attachmentFileName(attachmentFileName)
                         .attachmentFilePath(attachmentFilePath)
                         .receivers(receivers)
