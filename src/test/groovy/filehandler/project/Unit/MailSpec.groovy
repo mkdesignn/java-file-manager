@@ -3,25 +3,31 @@ package filehandler.project.Unit
 import filehandler.project.controller.MailController
 import net.minidev.json.parser.JSONParser
 import org.json.JSONObject
+import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.cglib.proxy.UndeclaredThrowableException
 import org.springframework.http.MediaType
+import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.mock.web.MockMultipartFile
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import spock.lang.Specification
 
+import javax.mail.internet.MimeMessage
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
-@ActiveProfiles("dev")
 @AutoConfigureMockMvc
 class MailSpec extends Specification {
 
     MockMvc mockMvc
+
+    @SpringBean
+    private JavaMailSender mailSender = Stub()
 
     @Autowired
     MailController mailController
@@ -34,8 +40,6 @@ class MailSpec extends Specification {
 
         given:
         MockMultipartFile attachmentFile = new MockMultipartFile("attachment", "test.json", "application/json", "{\"key1\": \"value1\"}".getBytes())
-
-        when:
         def requestBuilder = MockMvcRequestBuilders
                 .multipart("/mail")
                 .file(attachmentFile)
@@ -44,6 +48,12 @@ class MailSpec extends Specification {
                 .param("text", "test email body")
                 .param("receivers", "imany")
 
+        mailSender.send(_ as MimeMessage) >> { _ ->
+//             because of receivers invalidation
+            throw new UndeclaredThrowableException(new Exception("Invalid Addresses"))
+        }
+
+        when:
         mockMvc.perform(requestBuilder)
 
         then:
