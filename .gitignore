@@ -32,3 +32,5 @@ build/
 
 /src/*/resources/uploads/*
 /src/*/resources/application.properties
+*.properties
+.DS_Store
