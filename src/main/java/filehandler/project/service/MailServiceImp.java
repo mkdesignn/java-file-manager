@@ -1,5 +1,7 @@
 package filehandler.project.service;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import filehandler.project.entity.EmailMessage;
 import filehandler.project.entity.EmailReceiver;
 import filehandler.project.exceptions.EmailValidationException;
@@ -7,6 +9,7 @@ import filehandler.project.repository.EmailMessageRepository;
 import filehandler.project.repository.EmailReceiverRepository;
 import filehandler.project.transformer.EmailDTO;
 import filehandler.project.transformer.MessageDTO;
+import filehandler.project.utils.Conversion;
 import filehandler.project.utils.Validation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,10 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.internet.MimeMessage;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -34,10 +33,14 @@ public class MailServiceImp implements MailService {
     @Value("${file.attachmentDir}")
     public String attachmentDir;
 
+    @Value("${aws.bucket-name}")
+    private String bucketName;
+
     private final JavaMailSender mailSender;
     private final EmailMessageRepository emailMessageRepository;
     private final EmailReceiverRepository emailReceiverRepository;
 
+    private final AmazonS3 amazonS3;
 
     private File attachmentFile;
     private String attachmentFileName;
@@ -115,8 +118,8 @@ public class MailServiceImp implements MailService {
 
         String filePath = attachmentDir + File.separator + uuid.toString() + "." + fileExtension;
 
-        Path copyLocation = Paths.get(filePath);
-        Files.copy(attachment.getInputStream(), copyLocation, StandardCopyOption.REPLACE_EXISTING);
+        File file = Conversion.multiPartToFile(attachment);
+        amazonS3.putObject(new PutObjectRequest(bucketName, filePath, file));
 
         attachmentFile = new File(filePath);
         attachmentFileName = fullName;

@@ -1,14 +1,13 @@
 package filehandler.project.Unit
 
+import com.amazonaws.services.s3.AmazonS3
 import filehandler.project.controller.FileController
-import filehandler.project.service.S3Service
 import net.minidev.json.parser.JSONParser
 import org.json.JSONObject
 import org.spockframework.spring.SpringBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
@@ -27,7 +26,7 @@ class FileSpec extends Specification {
     FileController fileController
 
     @SpringBean
-    private S3Service s3Service = Stub()
+    private AmazonS3 amazonS3 = Stub()
 
     def setup() {
         mockMvc = MockMvcBuilders.standaloneSetup(fileController).build()

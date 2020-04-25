@@ -1,5 +1,6 @@
 package filehandler.project.Unit
 
+import com.amazonaws.services.s3.AmazonS3
 import filehandler.project.controller.MailController
 import net.minidev.json.parser.JSONParser
 import org.json.JSONObject
@@ -25,6 +26,9 @@ class MailSpec extends Specification {
 
     @SpringBean
     private JavaMailSender mailSender = Stub()
+
+    @SpringBean
+    private AmazonS3 amazonS3 = Stub()
 
     @Autowired
     MailController mailController
