@@ -30,6 +30,6 @@ build/
 ### VS Code ###
 .vscode/
 
+/src/*/resources/uploads/*
 /src/main/resources/application.properties
-.properties
 .DS_Store

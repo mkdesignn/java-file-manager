@@ -1,22 +1,14 @@
 package filehandler.project.service;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import filehandler.project.configuration.AWSProperties;
 import filehandler.project.entity.File;
 import filehandler.project.exceptions.UuidNotFoundException;
 import filehandler.project.repository.FileRepository;
 import filehandler.project.transformer.DownloadDTO;
+import filehandler.project.utils.Conversion;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -24,14 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.annotation.PostConstruct;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -45,22 +33,10 @@ public class FileServiceImp implements FileService {
     private String bucketName;
 
     private final FileRepository fileRepository;
-    private final S3Service s3Service;
-
-    private java.io.File convertMultiPartToFile(MultipartFile file) throws IOException {
-        java.io.File convFile = new java.io.File(Objects.requireNonNull(file.getOriginalFilename()));
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
-        fos.flush();
-        return convFile;
-    }
-
+    private final AmazonS3 amazonS3;
 
     @Override
     public File upload(MultipartFile file) throws IOException {
-
-        AmazonS3 s3Client = s3Service.amazonClient();
 
         UUID uuid = UUID.randomUUID();
         String fullName = StringUtils.cleanPath(file.getOriginalFilename());
@@ -69,8 +45,8 @@ public class FileServiceImp implements FileService {
         String fileName = fullName.substring(0, lastIndex);
         String fileExtension = fullName.substring(lastIndex + 1);
 
-        java.io.File convertMultiPartToFile = convertMultiPartToFile(file);
-        s3Client.putObject(new PutObjectRequest(bucketName, uploadDir + fullName, convertMultiPartToFile));
+        java.io.File convertMultiPartToFile = Conversion.multiPartToFile(file);
+        amazonS3.putObject(new PutObjectRequest(bucketName, uploadDir + fullName, convertMultiPartToFile));
 
         return fileRepository.save(
                 File.builder()
